@@ -66,4 +66,4 @@ def get_chat_history(user_id: int, db: Session = Depends(get_db)):
         .all()
     )
 
-    return history
+    return history  

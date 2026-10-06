@@ -4,6 +4,7 @@ from app.core.database import engine
 from app.models.models import Base
 from app.api import users, digest, chat
 from app.api.websocket import router as websocket_router
+import os
 
 # Create all tables on startup
 Base.metadata.create_all(bind=engine)
@@ -15,9 +16,16 @@ app = FastAPI(
 )
 
 # CORS for React frontend
+
+frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
+allowed_origins = [
+    "http://localhost:3000",
+    frontend_url,
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,3 +1,6 @@
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
 import React, { useState, useEffect, useRef } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { getLatestDigest } from '../services/api';
@@ -72,7 +75,12 @@ const DashboardPage: React.FC<Props> = ({ userId }) => {
         setLoading(true);
         setProgress([]);
         setError('');
-        const ws = new WebSocket(`ws://localhost:8000/ws/digest/${userId}`);
+        const WS_URL =
+            process.env.REACT_APP_WS_URL || 'ws://localhost:8000';
+
+        const ws = new WebSocket(
+            `${WS_URL}/ws/digest/${userId}`
+        );
         wsRef.current = ws;
         ws.onopen = () => ws.send(JSON.stringify({ action: 'start_digest' }));
         ws.onmessage = (event) => {
@@ -203,14 +211,138 @@ const DashboardPage: React.FC<Props> = ({ userId }) => {
 
             {digest && !fetching && (
                 <>
-                    {/* Briefing */}
-                    <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-6 mb-6 text-white shadow-lg">
-                        <p className="text-xs font-semibold uppercase tracking-wider opacity-80 mb-2">
-                            Today's AI Briefing
-                        </p>
-                        <p className="text-sm leading-relaxed whitespace-pre-line opacity-95">
-                            {digest.full_briefing}
-                        </p>
+                    {/* Daily Briefing */}
+                    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-sm mb-8 overflow-hidden">
+
+                        {/* Briefing Header */}
+                        <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+                            <div className="flex items-center gap-3">
+
+                                <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xl">
+                                    ✨
+                                </div>
+
+                                <div>
+                                    <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                                        Today's AI Briefing
+                                    </p>
+
+                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mt-0.5">
+                                        Your daily intelligence digest
+                                    </h3>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {/* Markdown Content */}
+                        <div className="px-6 py-6 text-gray-700 dark:text-gray-300">
+
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+
+                                    h1: ({ children }) => (
+                                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 mt-2">
+                                            {children}
+                                        </h1>
+                                    ),
+
+                                    h2: ({ children }) => (
+                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mt-8 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+                                            {children}
+                                        </h2>
+                                    ),
+
+                                    h3: ({ children }) => (
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mt-6 mb-3">
+                                            {children}
+                                        </h3>
+                                    ),
+
+                                    p: ({ children }) => (
+                                        <p className="text-sm leading-7 mb-4 text-gray-600 dark:text-gray-300">
+                                            {children}
+                                        </p>
+                                    ),
+
+                                    strong: ({ children }) => (
+                                        <strong className="font-semibold text-gray-900 dark:text-white">
+                                            {children}
+                                        </strong>
+                                    ),
+
+                                    ul: ({ children }) => (
+                                        <ul className="space-y-2 mb-5 ml-5 list-disc">
+                                            {children}
+                                        </ul>
+                                    ),
+
+                                    ol: ({ children }) => (
+                                        <ol className="space-y-2 mb-5 ml-5 list-decimal">
+                                            {children}
+                                        </ol>
+                                    ),
+
+                                    li: ({ children }) => (
+                                        <li className="text-sm leading-6 text-gray-600 dark:text-gray-300 pl-1">
+                                            {children}
+                                        </li>
+                                    ),
+
+                                    hr: () => (
+                                        <hr className="my-7 border-gray-200 dark:border-gray-700" />
+                                    ),
+
+                                    table: ({ children }) => (
+                                        <div className="overflow-x-auto mb-6 rounded-xl border border-gray-200 dark:border-gray-700">
+                                            <table className="w-full text-sm text-left">
+                                                {children}
+                                            </table>
+                                        </div>
+                                    ),
+
+                                    thead: ({ children }) => (
+                                        <thead className="bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200">
+                                            {children}
+                                        </thead>
+                                    ),
+
+                                    tbody: ({ children }) => (
+                                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                            {children}
+                                        </tbody>
+                                    ),
+
+                                    th: ({ children }) => (
+                                        <th className="px-4 py-3 font-semibold">
+                                            {children}
+                                        </th>
+                                    ),
+
+                                    td: ({ children }) => (
+                                        <td className="px-4 py-3 align-top leading-6 text-gray-600 dark:text-gray-300">
+                                            {children}
+                                        </td>
+                                    ),
+
+                                    a: ({ children, href }) => (
+                                        <a
+                                            href={href}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                                        >
+                                            {children}
+                                        </a>
+                                    ),
+                                }}
+                            >
+                                {digest.full_briefing}
+                            </ReactMarkdown>
+
+                        </div>
+
                     </div>
 
                     {/* Stats row */}

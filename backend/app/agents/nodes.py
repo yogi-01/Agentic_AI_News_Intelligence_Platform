@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 # Initialize LLM once — reused across nodes
 llm = ChatGroq(
     api_key=settings.GROQ_API_KEY,
-    model_name="llama-3.1-8b-instant"
+    model_name="openai/gpt-oss-20b"
 )
 
 # ─────────────────────────────────────────
@@ -164,20 +164,32 @@ def briefing_node(state: AgentState) -> AgentState:
 
     articles = state["processed_articles"]
     topics = state["topics"]
-
     prompt = ChatPromptTemplate.from_template("""
-    You are a professional news briefing writer.
-    Write a personalized morning briefing based on the articles below.
-    Group by topic, write an engaging intro, and end with a closing note.
-    Keep it concise and informative.
+You are a professional news briefing writer.
 
-    Topics covered: {topics}
+Create a clean, concise news briefing using ONLY the articles
+provided below.
 
-    Articles:
-    {articles}
+IMPORTANT:
+- Do not invent a user's name.
+- Do not use placeholders such as [Name] or [User].
+- Begin with a simple friendly greeting.
+- Group stories by topic.
+- Give each story a short headline and concise summary.
+- Mention the source naturally when useful.
+- Do not add facts that are not present in the supplied articles.
+- End with a short closing note.
+- Format the response using clean Markdown.
+- Do not create Markdown tables.
 
-    Write the full briefing now:
-    """)
+Topics covered:
+{topics}
+
+Articles:
+{articles}
+
+Write the full briefing now:
+""")
 
     articles_text = ""
     for article in articles:

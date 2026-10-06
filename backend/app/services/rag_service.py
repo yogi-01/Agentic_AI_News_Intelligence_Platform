@@ -8,8 +8,17 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Initialize ChromaDB client
-# Initialize persistent ChromaDB client
-chroma_client = chromadb.PersistentClient(path="/app/chroma_db")
+# Local development uses persistent local storage.
+# Production can use a shared ChromaDB server.
+if settings.CHROMA_HOST:
+    chroma_client = chromadb.HttpClient(
+        host=settings.CHROMA_HOST,
+        port=settings.CHROMA_PORT
+    )
+else:
+    chroma_client = chromadb.PersistentClient(
+        path="/app/chroma_db"
+    )
 collection = chroma_client.get_or_create_collection(
     name="news_articles",
     metadata={"hnsw:space": "cosine"}
@@ -23,7 +32,7 @@ embeddings_model = HuggingFaceEmbeddings(
 # Initialize LLM
 llm = ChatGroq(
     api_key=settings.GROQ_API_KEY,
-    model_name="llama-3.1-8b-instant")
+    model_name="openai/gpt-oss-20b")
 
 
 def store_articles_in_chroma(digest_id: int, articles: list):

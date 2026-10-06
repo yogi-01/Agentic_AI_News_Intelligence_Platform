@@ -15,6 +15,9 @@ class Settings(BaseSettings):
 
     # HuggingFace
     HUGGINGFACE_MODEL: str = "all-MiniLM-L6-v2"
+    # ChromaDB
+    CHROMA_HOST: str | None = None
+    CHROMA_PORT: int = 8000
 
     # App
     SECRET_KEY: str = "supersecretkey"
